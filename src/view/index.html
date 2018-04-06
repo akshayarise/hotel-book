@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+  <title>hotels</title>
+
+  <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../bower_components/iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../bower_components/paper-radio-group/paper-radio-group.html">
+  <link rel="import" href="../../bower_components/paper-radio-button/paper-radio-button.html">
+  <link rel="import" href="../../bower_components/paper-card/paper-card.html">
+  <link rel="import" href="../../bower_components/scalable-image-grid/scalable-image-grid.html">
+  <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+  <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+  <link rel="import" href="../../bower_components/s-rating/s-rating.html">
+  <link rel="import" href="../../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+  <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+
+  <style is="custom-style" include="demo-pages-shared-styles">
+    :root {
+      --scalable-image-grid-max-columns: 4;
+      --scalable-image-grid-gutter: 15;
+      --scalable-image-grid-min-image-width: 250;
+      --scalable-image-grid-image-height: 56;
+      --scalable-image-grid-background-color: auto;
+      --scalable-image-grid-image-style: {
+        box-shadow: 0 12px 15px 0 rgba(0, 0, 0, 0.34);
+        --paper-card-background-color: lightgray;
+      }
+      ;
+
+      --demo-snippet: {
+        max-width: 80vw;
+        padding: 0px;
+      }
+      ;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <h3>you can book any hotel here</h3>
+    <div>
+      <i>list of hotels</i>
+    </div>
+    <demo-snippet id="demoContainer">
+      <!-- <template> -->
+      <scalable-image-grid id="imgGrid" ripple></scalable-image-grid>
+      <!-- </template> -->
+    </demo-snippet>
+    <div><span id="usrClick"></span></div>
+  </div>
+
+  <!-- <paper-button raised onclick="animated.open()">open</paper-button> -->
+  <paper-dialog id="animated" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+    <div id="divid">
+      <h2>user information</h2>
+      <paper-input label="username" id="userName">
+      </paper-input>
+    </div>
+  </paper-dialog>
+  <paper-button id="submit" raised>
+    submit
+  </paper-button>
+  <script type="text/javascript">
+    var imageSet1 = [ // Example using an array of objects.
+      {
+        source: "http://streamafrica.com/wp-content/uploads/2016/01/hotels-4.jpg",
+        order: 12
+      },
+      {
+        source: "https://ihg.scene7.com/is/image/ihg/holiday-inn-hotel-and-suites-oakland-2533422671-4x3",
+        order: 2
+      },
+      {
+        source: "https://www.safarihotelsnamibia.com/wp-content/uploads/2014/11/Safari-Court-Hotel-Pool.jpg",
+        order: 3
+      },
+      {
+        source: "https://taj.tajhotels.com/content/dam/luxury/hotels/Taj_Mahal_Delhi/images/4x3/HotelFacade4x3.jpg",
+        order: 4
+      },
+      {
+        source: "https://www.rwsentosa.com/-/media/project/non-gaming/rwsentosa/hotels/hard-rock-hotel-singapore/hardrockhotelsg-exterior.jpg?mh=666&la=en&h=666&w=1366&mw=1366&hash=7890A13D2C4FE83769F4A571B997007215155027",
+        order: 5
+      },
+      {
+        source: "https://www.corinthia.com/application/files/6315/0460/7084/corinthia-hotel-tripoli-lobby.jpg",
+        order: 6
+      },
+      {
+        source: "https://media-cdn.tripadvisor.com/media/photo-s/08/20/75/0d/hotel-contessa.jpg",
+        order: 7
+      },
+      {
+        source: "http://www.hotel-chinzanso-tokyo.com/wp-content/uploads/sites/225/2015/11/Hotel-Chinzanso-Tokyo_spa1.jpg",
+        order: 8
+      },
+      {
+        source: "https://ihg.scene7.com/is/image/ihg/Brand-Home_Desktop_Image-5-Travel-fit-even-during-downtime-with-EVEN-Hotels-Premium-Bedding@2x",
+        order: 9
+      },
+      {
+        source: "https://www.tajhotels.com/content/dam/gateway/hotels/Beach-Road,Calicut/images/welcome/Calicut_Welcome-for-Web_4x3-01.jpg",
+        order: 10
+      },
+      {
+        source: "https://www.usandbeyond.com/wp-content/uploads/2018/01/Hote1.jpg",
+        order: 11
+      },
+      {
+        source: "http://travelji.com/wp-content/uploads/Hotel-Tips.jpg",
+        order: 1
+      }
+    ];
+
+    var imgGrid;
+    var arr = [];
+    var counter = 0;
+
+    window.addEventListener('WebComponentsReady', function(e) {
+      fetch(`http://trivago.com:3000/hotelrecommend`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+        })
+        .then(response => {
+          return response.text();
+        })
+        .then(response => {
+          console.log('response<<<<<<<<<<<<<<<<<<<<<<<<<',response);
+          return response;
+        });
+
+      console.log("Getting images");
+      imgGrid = document.getElementById("imgGrid");
+      imgGrid.loadImageList(imageSet1);
+      document.getElementById('imgGrid').addEventListener('scalable-image-selected', function(e) {
+        console.log(e.detail.imageIndex);
+
+        document.getElementById("animated").open();
+        let hotelName;
+        switch (e.detail.imageIndex) {
+          case '0':
+            hotelName = "Taj";
+            break;
+          case '1':
+            hotelName = "radisson";
+            break;
+          case '2':
+            hotelName = "leMeredian";
+            break;
+          case '3':
+            hotelName = "intercontinental";
+            break;
+          case '4':
+            hotelName = "oberoi";
+            break;
+          case '5':
+            hotelName = "prithvi";
+            break;
+          case '6':
+            hotelName = "country inn";
+            break;
+          case '7':
+            hotelName = "shangrila";
+            break;
+          case '8':
+            hotelName = "volga";
+            break;
+          case '9':
+            hotelName = "galaxy";
+            break;
+          case '10':
+            hotelName = "jam";
+            break;
+          case '11':
+            hotelName = "plaza";
+            break;
+        }
+        console.log('hotelName<<<<', hotelName);
+        var y = document.createElement("s-rating");
+        var x = document.createElement("INPUT");
+        counter++;
+        x.id = `hotelName${counter}`;
+        y.id = `sRating${counter}`;
+
+        x.setAttribute("value", hotelName);
+
+        document.getElementById('divid').appendChild(x);
+        document.getElementById('divid').appendChild(y);
+
+        console.log('srating<<<<', document.getElementById(`sRating${counter}`).value);
+
+        document.getElementById(`sRating${counter}`).addEventListener('click', () => {
+          if (document.getElementById(`sRating${counter}`).value != undefined) {
+            arr.push({
+              rating: document.getElementById(`sRating${counter}`).value,
+              hotelName: document.getElementById(`hotelName${counter}`).value
+            });
+          }
+        });
+
+        document.getElementById('usrClick').innerHTML = "Selected Image Index: " + e.detail.imageIndex;
+        setTimeout(function() {
+          document.getElementById('usrClick').innerHTML = "";
+        }, 2000);
+      });
+    });
+
+    document.getElementById("submit").addEventListener("click", function() {
+
+      requestData = {
+        userName: document.getElementById("userName").value,
+        hotelNamesAndRatings: arr
+      }
+
+      fetch(`http://trivago.com:3000/hotelanduserbook`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestData),
+        })
+        .then(response => {
+          return response.text();
+        })
+        .then(response => {
+          return response;
+        });
+    });
+
+    // Note if a parent container such as demo-snippet does
+    // not implement iron-resize-behavior then we need to
+    // manually force a grid size adjustment by calling the
+    // adjustToCurrentSize method.
+    function setSize(num) {
+      var elem = document.getElementById("demoContainer");
+      var imgGrid = document.getElementById("imgGrid");
+      console.log("SSS: ", num);
+      console.log(elem.style.maxWidth);
+      switch (num) {
+        case 1:
+          elem.style.maxWidth = "80vw";
+          imgGrid.adjustToCurrentSize();
+          break;
+        case 2:
+          elem.style.maxWidth = "50vw";
+          imgGrid.adjustToCurrentSize();
+          break;
+        case 3:
+          elem.style.maxWidth = "25vw";
+          imgGrid.adjustToCurrentSize();
+          break;
+      }
+    }
+
+    function swapImageSets(set) {
+      if (set === 1) {
+        imgGrid.maxColumns = 4;
+        imgGrid.imageHeight = 56;
+        imgGrid.minImageWidth = 250;
+        imgGrid.gridGutter = 15;
+        imgGrid.loadImageList(imageSet1);
+      }
+    }
+  </script>
+</body>
+
+</html>
